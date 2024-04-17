@@ -37,12 +37,15 @@
             cargo-watch
             clippy
             rustfmt
+            steamcmd
           ];
         };
 
         # Packages
         packages = rec {
-            steam_icon_db_api = (rustPkgs.workspace.steam_icon_db_api {}).bin;
+            steam_icon_db_api = (rustPkgs.workspace.steam_icon_db_api {}).bin.overrideAttrs (oldAttrs: {
+              buildInputs = (oldAttrs.buildInputs or []) ++ [ pkgs.steamcmd ];
+            });
             default = steam_icon_db_api;
         };
 
@@ -50,6 +53,7 @@
           steam_icon_db_api = {
               type = "app";
               program = "${self'.packages.router}/bin/steam_icon_db_api";
+              buildInputs = with pkgs; [ steamcmd ];
             };
           };
       };

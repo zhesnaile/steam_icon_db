@@ -35,9 +35,11 @@
             rust-bin.stable.${rustVersion}.default
             cargo-edit
             cargo-watch
+            rust-analyzer
             clippy
             rustfmt
             steamcmd
+            openssl
           ];
         };
 

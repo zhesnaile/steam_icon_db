@@ -5,6 +5,11 @@ use axum::{
     Router,
 };
 use reqwest::Client;
+use serde_json;
+
+
+
+
 
 fn call_steamcmd() -> Result<(), Box<dyn std::error::Error>> {
     let child = Command::new("steamcmd")
@@ -32,13 +37,16 @@ fn call_steamcmd() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn request_game_id_list() -> Result<(), Box<dyn std::error::Error>> {
-    let response = reqwest::get("https://api.steampowered.com/ISteamApps/GetAppList/v2/")
-    .await
-    .unwrap()
-    .text()
-    .await;
-    println!("{:?}", response);
-
+    const STEAM_GET_APP_LIST_URL: &str = "https://api.steampowered.com/ISteamApps/GetAppList/v2/";
+    match reqwest::get(STEAM_GET_APP_LIST_URL).await {
+        Ok(resp) => {
+            let json: serde_json::Value = resp.json().await?;
+            println!("{:?}", json);
+        }
+        Err(err) => {
+            println!("Reqwest Error: {}", err);
+        }
+    }
     Ok(())
 }
 

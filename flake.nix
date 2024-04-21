@@ -39,8 +39,9 @@
             clippy
             rustfmt
             steamcmd
-            openssl
+            openssl.dev
           ];
+          nativeBuildInputs = [pkgs.pkg-config];
         };
 
         # Packages

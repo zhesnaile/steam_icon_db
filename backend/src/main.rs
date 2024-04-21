@@ -11,11 +11,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut interval = time::interval(time::Duration::from_secs(60));
         loop {
             interval.tick().await;
-            request_game_id_list().await;
+            match request_game_id_list().await {
+                Ok(game_list) => println!("{:?}", game_list),
+                Err(err) => eprintln!("{}", err)
+            }
         }
     });
 
-    crate::api::router::http_router_main().await.unwrap();
+    http_router_main().await.unwrap();
 
     Ok(())
 }

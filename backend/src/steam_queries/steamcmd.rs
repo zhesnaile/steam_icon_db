@@ -1,10 +1,11 @@
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
+use anyhow::Result;
 
-fn call_steamcmd() -> Result<(), Box<dyn std::error::Error>> {
+fn get_client_icons(appid: u32) -> Result<()> {
     let child = Command::new("steamcmd")
         .arg("+app_info_print")
-        .arg("48190")
+        .arg(appid.to_string())
         .arg("+quit")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())

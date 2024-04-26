@@ -1,21 +1,20 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
 #[derive(Deserialize, Debug, Serialize)]
 struct AppInfo {
-    #[serde(rename = "Common")]
-    common: Common,
+    common: ClientIcons,
 }
 
 #[derive(Deserialize, Debug, Serialize)]
-struct Common {
+pub struct ClientIcons {
     clienticon: Option<String>,
     linuxclienticon: Option<String>,
 }
 
-pub fn get_client_icons(appid: u32) -> Result<(Option<String>, Option<String>)> {
+pub fn get_client_icons(appid: u32) -> Result<ClientIcons> {
     let child = Command::new("steamcmd")
         .arg("+app_info_print")
         .arg(appid.to_string())
@@ -48,21 +47,17 @@ pub fn get_client_icons(appid: u32) -> Result<(Option<String>, Option<String>)> 
             }
         }
 
-        let steam_app_vec = steam_app_vec.join("\n");
+        let steam_app_vec = steam_app_vec.join("");
 
         let app_info: AppInfo = keyvalues_serde::from_str(&steam_app_vec)?;
 
-        println!("Appid info: {app_info:#?}");
+        return Ok(app_info.common);
     } else {
-        println!(
+        return Err(anyhow!(
             "SteamCMD command failed with exit status: {}",
             output.status
-        );
+        ));
     }
-    let clienticon = Some(String::from("d9157d92d45689e1ec92aea00980fcfad0ce977e"));
-    let linuxclienticon: Option<String> = None;
-
-    Ok((clienticon, linuxclienticon))
 }
 
 #[cfg(test)]
@@ -73,11 +68,14 @@ mod tests {
     fn test_client_icons() {
         const APPID: u32 = 590380;
 
-        let test_clienticon = Some(String::from("d9157d92d45689e1ec92aea00980fcfad0ce977e"));
-        let test_linuxclienticon: Option<String> = None;
+        let clienticon = Some(String::from("d9157d92d45689e1ec92aea00980fcfad0ce977e"));
+        let linuxclienticon = None;
 
-        if let Ok(result) = get_client_icons(APPID) {
-            assert_eq!((test_clienticon, test_linuxclienticon), result)
-        }
+        let result = get_client_icons(APPID).unwrap();
+
+        assert_eq!(
+            (clienticon, linuxclienticon),
+            (result.clienticon, result.linuxclienticon)
+        )
     }
 }

@@ -1,6 +1,5 @@
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
-use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
 #[derive(Deserialize, Debug, Serialize)]
@@ -10,11 +9,11 @@ struct AppInfo {
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct ClientIcons {
-    clienticon: Option<String>,
-    linuxclienticon: Option<String>,
+    pub clienticon: Option<String>,
+    pub linuxclienticon: Option<String>,
 }
 
-pub fn get_client_icons(appid: u32) -> Result<ClientIcons> {
+pub async fn get_client_icons(appid: u32) -> Result<ClientIcons> {
     let child = Command::new("steamcmd")
         .arg("+app_info_print")
         .arg(appid.to_string())
@@ -27,9 +26,7 @@ pub fn get_client_icons(appid: u32) -> Result<ClientIcons> {
     let output = child.wait_with_output()?;
 
     if output.status.success() {
-        println!("SteamCMD command executed successfully!");
-
-        let d = String::from_utf8(output.stdout).unwrap();
+        let d = String::from_utf8(output.stdout)?;
 
         let mut steam_app_vec = Vec::new();
         let mut pattern_found = false;
@@ -41,6 +38,8 @@ pub fn get_client_icons(appid: u32) -> Result<ClientIcons> {
                 if line == pattern {
                     pattern_found = true;
                     steam_app_vec.push(line.to_string());
+                } else if line.contains("No app info for AppID") {
+                    return Err(anyhow!("No app info for AppID: {appid}"));
                 }
             } else {
                 steam_app_vec.push(line.to_string());
@@ -51,12 +50,12 @@ pub fn get_client_icons(appid: u32) -> Result<ClientIcons> {
 
         let app_info: AppInfo = keyvalues_serde::from_str(&steam_app_vec)?;
 
-        return Ok(app_info.common);
+        Ok(app_info.common)
     } else {
-        return Err(anyhow!(
+        Err(anyhow!(
             "SteamCMD command failed with exit status: {}",
             output.status
-        ));
+        ))
     }
 }
 

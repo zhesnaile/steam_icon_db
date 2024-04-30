@@ -63,14 +63,14 @@ pub async fn get_client_icons(appid: u32) -> Result<ClientIcons> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_client_icons() {
+    #[tokio::test]
+    async fn test_client_icons() {
         const APPID: u32 = 590380;
 
         let clienticon = Some(String::from("d9157d92d45689e1ec92aea00980fcfad0ce977e"));
         let linuxclienticon = None;
 
-        let result = get_client_icons(APPID).unwrap();
+        let result = get_client_icons(APPID).await.unwrap();
 
         assert_eq!(
             (clienticon, linuxclienticon),

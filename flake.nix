@@ -18,20 +18,11 @@
       ];
 
       perSystem = { self', pkgs, system, ... }:
-      let
-        rustVersion = "1.76.0";
-        rustPkgs = pkgs.rustBuilder.makePackageSet {
-          inherit rustVersion;
-          packageFun = import ./backend/Cargo.nix;
-        };
-
-      in 
-
       {
         _module.args.pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
-          overlays = [ inputs.cargo2nix.overlays.default (import inputs.rust-overlay) ];
+          overlays = [ (import inputs.rust-overlay) ];
         };
 
         devenv.shells.default = {
@@ -69,15 +60,30 @@
 
         # Packages
         packages = rec {
-            steam_icon_db_api = (rustPkgs.workspace.steam_icon_db_api {}).bin;
-            default = steam_icon_db_api;
+          steam_icon_db_api = pkgs.rustPlatform.buildRustPackage rec {
+            pname = "steam_icon_db_api";
+            version = "0.1.0";
+
+            src = ./backend;
+
+            doCheck = false;
+
+            cargoHash = "sha256-JM3Nt6Zn4bkLxw54s2YnHrHkT200Pgov1X6XZdXFD/4=";
+
+            buildInputs = with pkgs; [ steamcmd openssl.dev ];
+            nativeBuildInputs = with pkgs; [ steamcmd pkg-config ];
+
+          };
+
+          default = steam_icon_db_api;
+
         };
 
         apps = {
           steam_icon_db_api = {
               type = "app";
-              program = "${self'.packages.router}/bin/steam_icon_db_api";
-              buildInputs = with pkgs; [ steamcmd ];
+              program = "${self'.packages.steam_icon_db_api}/bin/steam_icon_db_api";
+              buildInputs = with pkgs; [ steamcmd openssl.dev ];
             };
           };
       };

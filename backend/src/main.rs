@@ -14,7 +14,7 @@ async fn main() -> Result<()> {
             interval.tick().await;
             match update_game_db().await {
                 Ok(_) => (),
-                Err(err) => (),
+                Err(_err) => (),
             }
         }
     });

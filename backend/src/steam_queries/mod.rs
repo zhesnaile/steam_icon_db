@@ -1,8 +1,17 @@
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 use self::{gamelist::request_game_id_list, steamcmd::get_client_icons};
 pub mod gamelist;
 pub mod steamcmd;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SteamApp {
+    pub appid: u32,
+    pub name: String,
+    pub linuxclienticon: Option<String>,
+    pub clienticon: Option<String>,
+}
 
 pub async fn update_game_db() -> Result<()> {
     let game_list = request_game_id_list().await?;

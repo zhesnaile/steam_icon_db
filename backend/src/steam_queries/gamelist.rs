@@ -1,13 +1,7 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct SteamApp {
-    pub appid: u32,
-    pub name: String,
-    pub linuxclienticon: Option<String>,
-    pub clienticon: Option<String>,
-}
+use crate::steam_queries::SteamApp;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct SteamAppList {
